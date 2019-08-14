@@ -1,41 +1,41 @@
 <?php
 /**
  * USA ePay Magento Plugin.
- * v1.1.4 - November 8th, 2013
- * 
+ * v1.1.7 - December 19th, 2014
+ *
  * For assistance please contact devsupport@usaepay.com
- * 
+ *
  * Copyright (c) 2010 USAePay
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
  * are met:
- * 
- *     - Redistributions of source code must retain the above copyright 
+ *
+ *     - Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- *     - Redistributions in binary form must reproduce the above 
- *       copyright notice, this list of conditions and the following 
- *       disclaimer in the documentation and/or other materials 
+ *     - Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
  *       provided with the distribution.
- *     - Neither the name of the USAePay nor the names of its 
- *       contributors may be used to endorse or promote products 
- *       derived from this software without specific prior written 
+ *     - Neither the name of the USAePay nor the names of its
+ *       contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written
  *       permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @category    Mage
  * @package     Mage_Usaepay_Block_Form
  * @copyright   Copyright (c) 2010 USAePay  (www.usaepay.com)
@@ -46,14 +46,14 @@
 class Mage_Usaepay_Block_Form extends Mage_Payment_Block_Form
 {
 	protected $_paymentConfig;
-	
+
     protected function _construct()
     {
 		$this->_paymentConfig = Mage::getStoreConfig('payment/usaepay');
         $this->setTemplate('usaepay/form.phtml');
         parent::_construct();
     }
-    
+
     /**
      * Retrieve payment configuration object
      *
@@ -63,26 +63,26 @@ class Mage_Usaepay_Block_Form extends Mage_Payment_Block_Form
     {
         return Mage::getSingleton('payment/config');
     }
-	
+
 	public function createExtendedFraudProfilingSession()
 	{
 		if(!$this->_paymentConfig['extendedfraudprofiling']) return false;
-		
+
 		$checkout = Mage::getSingleton('checkout/session');
 		$stepIsAllowed = $checkout->getStepData('payment', 'allow');
 		$stepIsComplete = $checkout->getStepData('payment', 'complete');
-		
+
 		if(!$stepIsAllowed || $stepIsComplete)
 		{
 			return false;
 		}
-		
+
 		try
 		{
 			$method = $this->getMethod();
-		
+
 			if(!$method) return false;
-			
+
 			// payment info might not be avliable at this point (first render?)
 			$paymentInfo = $method->getInfoInstance();
 		}
@@ -91,20 +91,20 @@ class Mage_Usaepay_Block_Form extends Mage_Payment_Block_Form
 			Mage::logException($e);
 			return false;
 		}
-		
+
 		$results = self::_getExtendedFraudProfilingSession($this->_paymentConfig);
-		
+
 		// Mage::log('createExtendedFraudProfilingSession() sessionid: '.$results['sessionid']);
-		
+
 		if($results)
 		{
 			// efp = extended fraud profiling
 			$paymentInfo->setAdditionalInformation('usaepay_efpSessionId', $results['sessionid']);
 		}
-		
+
 		return $results;
 	}
-    
+
     public function getCcAvailableTypes()
     {
         $types = $this->_getConfig()->getCcTypes();
@@ -121,7 +121,7 @@ class Mage_Usaepay_Block_Form extends Mage_Payment_Block_Form
         }
         return $types;
     }
-    
+
     public function getCcMonths(){
       $months['01'] = 'January';
       $months['02'] = 'February';
@@ -143,7 +143,7 @@ class Mage_Usaepay_Block_Form extends Mage_Payment_Block_Form
          $years[date('Y',strtotime("+$i years"))] = date('Y',strtotime("+$i years"));
       return $years;
     }
-	
+
 	static protected function _getExtendedFraudProfilingSession($config)
 	{
 		$seed = md5(mt_rand());
@@ -167,9 +167,9 @@ class Mage_Usaepay_Block_Form extends Mage_Payment_Block_Form
 
 		// Make Rest Call
 		$output = file_get_contents($url);
-		
+
 		// Mage::log("usaepay -> extended fraud profiling session\nrequest url:\n$url\nresponse:\n$output", null, 'usaepay.log');
-		
+
 		if(!$output) {
 			Mage::log('usaepay -> payment form error -> extended fraud profiling -> Blank response', Zend_Log::ERR);
 			return false;
