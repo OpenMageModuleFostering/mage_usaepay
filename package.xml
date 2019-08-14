@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+    <name>Mage_Usaepay</name>
+    <version>1.1.4</version>
+    <stability>stable</stability>
+    <license>BSD License</license>
+    <channel>community</channel>
+    <extends/>
+    <summary>Payment gateway module for USAePay.</summary>
+    <description>Provides native support for the USAePay gateway. To use module you must first generate a source key and pin within the USAePay console.</description>
+    <notes>- fixes viewing of orders in Admin Panel for Mangeto 1.8</notes>
+    <authors><author><name>Tim McEwen</name><user>tmcewen</user><email>tim@usaepay.com</email></author></authors>
+    <date>2013-11-16</date>
+    <time>00:32:12</time>
+    <contents><target name="magecommunity"><dir name="Mage"><dir name="Usaepay"><dir name="Block"><file name="Form.php" hash="134735ac6d446701d107731514487309"/></dir><dir name="Helper"><file name="Data.php" hash="1d8b5e41787d9b39f20d032e0915c440"/></dir><dir name="Model"><file name="CCPaymentAction.php" hash="8d2c81961c956f9818d370750b4676a0"/><file name="SuspectedFraudConfigOptions.php" hash="7d459b10f89724319754f552f84df822"/><file name="TranApi.php" hash="22b43314d8f5af31c88650b66253a9b1"/></dir><dir name="etc"><file name="config.xml" hash="7dd581db6f0319a339ed15ce3aac517c"/><file name="system.xml" hash="92511e632b741859fe44a54eb932aef2"/></dir></dir></dir></target><target name="magedesign"><dir name="adminhtml"><dir name="base"><dir name="default"><dir name="template"><dir name="usaepay"><file name="form.phtml" hash="48b91f62984d90a79763981c30fd525c"/></dir></dir></dir></dir></dir><dir name="frontend"><dir name="base"><dir name="default"><dir name="template"><dir name="usaepay"><file name="form.phtml" hash="d6d855ebb41390d604514611ee095378"/></dir></dir></dir></dir></dir></target><target name="mageetc"><dir name="modules"><file name="Mage_Usaepay.xml" hash="75501b64d4533ff3fa8ee2b724542eca"/></dir></target></contents>
+    <compatible/>
+    <dependencies><required><php><min>5.2.0</min><max>5.4.0</max></php></required></dependencies>
+</package>
