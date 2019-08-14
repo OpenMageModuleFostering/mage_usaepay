@@ -1,7 +1,7 @@
 <?php
 /**
  * USA ePay Magento Plugin.
- * v1.1.7 - December 19th, 2014
+ * v1.1.9 - July 3rd, 2015
  *
  * For assistance please contact devsupport@usaepay.com
  *
@@ -202,4 +202,85 @@ class Mage_Usaepay_Block_Form extends Mage_Payment_Block_Form
 		// cast xml 'objects' as strings to avoid weird issues elsewhere (like setAdditionalInfo for payments)
 		return array('sessionid'=> (string)$xml->SessionID, 'orgid'=> (string)$xml->OrgID, 'html'=> $out);
 	}
+
+
+	/**
+	 * Return gateway url
+	 *
+	 * @return string
+	 */
+	protected function _getGatewayUrl()
+	{
+		$tran = Mage::getModel('usaepay/TranApi');
+
+		if($this->_paymentConfig['sandbox']) $tran->usesandbox = true;
+
+		return $tran->getGatewayBaseUrl() . '/tokenize';
+	}
+
+	/**
+	 * Check if enabled tokenization
+	 *
+	 * @return bool
+	 */
+	protected function _ifTokenizationEnabled()
+	{
+		return $this->_paymentConfig['tokenization'] ? true : false;
+	}
+
+  /**
+   * Check that cart auto detect is run
+   * @return bool
+   */
+  protected function _ifAutoCardDetect()
+  {
+    return $this->_paymentConfig['card_detect'] == 1;
+  }
+
+  /**
+   * Return JavaScript rules for detect card
+   * @return string
+   */
+  protected  function _getCCRules()
+  {
+    $data =  array
+    (
+      "VI" => "{name: 'VI', pattern: /^4/}",
+      "MC" => "{name: 'MC', pattern: /^5[1-5]/}",
+      "AE" => "{name: 'AE', pattern: /^3[47]/}",
+      "DI" => "{name: 'DI', pattern: /^(6011|622(12[6-9]|1[3-9][0-9]|[2-8][0-9]{2}|9[0-1][0-9]|92[0-5]|64[4-9])|65)/}",
+      "GC" => "{name: 'GC', pattern: /[0-9]{19}/}",
+      "OT" => "{name: 'OT', pattern: /[0-9]{1-20}/}"
+    );
+    $rules = array();
+
+    $availableTypes = $this->_paymentConfig['cctypes'];
+    if ($availableTypes)
+    {
+      $types = explode(',', $availableTypes);
+      foreach ($data AS $code=>$rule)
+      {
+        if (in_array($code, $types))
+        {
+          $rules[] = $rule;
+        }
+      }
+    }
+    return implode(",", $rules);
+  }
+
+  protected function _getCCImages()
+  {
+    $images = array();
+    $availableTypes = $this->_paymentConfig['cctypes'];
+    if ($availableTypes)
+    {
+      $types = explode(',', $availableTypes);
+      foreach($types AS $code)
+      {
+        $images[$code] = $this->getSkinUrl('images/usaepay/' . $code . '.png');
+      }
+    }
+    return $images;
+  }
 }

@@ -3,11 +3,11 @@
     "type": "magento-module",
     "license": "BSD-License",
     "homepage": "",
-    "description": "Payment gateway module for USAePay.",
+    "description": "Payment gateway extension for USAePay",
     "authors": [
     {
         "name": "Tim McEwen",
-        "email": "tim@usaepay.com"
+        "email": "magento@usaepay.com"
     }
 ],
     "suggest": {

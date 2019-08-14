@@ -2,7 +2,7 @@
 <!--
 /**
  * USA ePay Magento Plugin.
- * v1.1.7 - December 19th, 2014
+ * v1.1.9 - July 3rd, 2015
  *
  * For assistance please contact devsupport@usaepay.com
  *
@@ -46,9 +46,27 @@
 <config>
     <modules>
         <Mage_Usaepay>
-            <version>1.1.7</version>
+            <version>1.1.8</version>
         </Mage_Usaepay>
     </modules>
+    <frontend>
+        <layout>
+            <updates>
+                <usaepay>
+                    <file>usaepay.xml</file>
+                </usaepay>
+            </updates>
+        </layout>
+    </frontend>
+    <adminhtml>
+        <layout>
+            <updates>
+                <usaepay>
+                    <file>usaepay.xml</file>
+                </usaepay>
+            </updates>
+        </layout>
+    </adminhtml>
     <global>
         <blocks>
             <usaepay><class>Mage_Usaepay_Block</class></usaepay>
@@ -59,6 +77,12 @@
             </usaepay>
         </models>
         <resources>
+            <usaepay_setup>
+                <setup>
+                    <module>Mage_Usaepay</module>
+                    <class>Mage_Sales_Model_Resource_Setup</class>
+                </setup>
+            </usaepay_setup>
             <usaepay_write>
                 <connection>
                     <use>core_write</use>
@@ -70,21 +94,42 @@
                 </connection>
             </usaepay_read>
         </resources>
+        <payment>
+            <cc>
+                <types>
+                    <GC>
+                        <code>GC</code>
+                        <name>Gift Card</name>
+                        <order>999</order>
+                    </GC>
+                </types>
+            </cc>
+        </payment>
+        <fieldsets>
+            <sales_convert_quote_payment>
+                <cc_usaepay_token>
+                    <to_order_payment>*</to_order_payment>
+                </cc_usaepay_token>
+            </sales_convert_quote_payment>
+        </fieldsets>
     </global>
     <default>
         <payment>
             <usaepay>
-                  <model>usaepay/CCPaymentAction</model>
-                  <title>USAePay Gateway</title>
-                  <order_status>pending</order_status>
-                  <title>Credit Card</title>
-                  <active>0</active>
-				  <extendedfraudprofiling>0</extendedfraudprofiling>
-				  <usesuspectedfraud>0</usesuspectedfraud>
-                  <allowspecific>0</allowspecific>
-                  <cctypes>AE,VI,MC,DI</cctypes>
-                  <payment_action>authorize</payment_action>
-                  <currency>USD</currency>
+                <model>usaepay/CCPaymentAction</model>
+                <title>USAePay Gateway</title>
+                <order_status>pending</order_status>
+                <title>Credit Card</title>
+                <active>0</active>
+                <extendedfraudprofiling>0</extendedfraudprofiling>
+                <usesuspectedfraud>0</usesuspectedfraud>
+                <allowspecific>0</allowspecific>
+                <card_detect>0</card_detect>
+                <cctypes>AE,VI,MC,DI,GC</cctypes>
+                <payment_action>authorize</payment_action>
+                <currency>USD</currency>
+                <tokenization>0</tokenization>
+                <timeout>45</timeout>
             </usaepay>
         </payment>
     </default>

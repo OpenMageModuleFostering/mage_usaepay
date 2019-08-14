@@ -1,7 +1,7 @@
 <?php
 /**
  * USA ePay Magento Plugin.
- * v1.1.7 - December 19th, 2014
+ * v1.1.9 - July 3rd, 2015
  *
  * For assistance please contact devsupport@usaepay.com
  *
@@ -51,6 +51,7 @@
                 <input type="text" title="<?php echo $this->__('Name on Card') ?>" class="required-entry input-text" id="<?php echo $_code ?>_cc_owner" name="payment[cc_owner]" value="<?php echo $this->htmlEscape($this->getInfoData('cc_owner')) ?>"/>
             </div>
         </li>
+      <?php if(!$this->_ifAutoCardDetect()): ?>
         <li>
             <div class="input-box">
                 <label for="<?php echo $_code ?>_cc_type"><?php echo $this->__('Credit Card Type') ?> <span class="required">*</span></label><br />
@@ -63,13 +64,27 @@
                 </select>
             </div>
         </li>
+      <?php endif; ?>
         <li>
             <div class="input-box">
                 <label for="<?php echo $_code ?>_cc_number"><?php echo "Credit Card Number" ?> <span class="required">*</span></label><br/>
                 <input type="text" id="<?php echo $_code ?>_cc_number" name="payment[cc_number]" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="" />
+                <?php if($this->_ifTokenizationEnabled()): ?>
+                    <input type="hidden" id="<?php echo $_code ?>_cc_last4" name="payment[cc_last4]" value="" />
+                    <input type="hidden" id="<?php echo $_code ?>_cc_token" name="payment[cc_usaepay_token]" value="" />
+                <?php endif; ?>
+                <div id="cards" style="float: right;">
+                <?php
+                $imgs = $this->_getCCImages();
+                foreach($imgs AS $code => $img_url):
+                ?>
+                <img src="<?php echo($img_url); ?>"  id="cc_icon_<?php echo($_code. "_". $code); ?>" class="cc_icons" style="display: inline-block;float: left;height: 30px;margin-left: 5px;"/>
+
+                <?php endforeach; ?>
+              </div>
             </div>
         </li>
-        <li>
+        <li id="<?php echo $_code ?>_cc_expiration_block">
             <div class="input-box">
                 <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">*</span></label><br />
                 <div class="v-fix">
@@ -90,7 +105,7 @@
                 </div>
             </div>
         </li>
-        <li>
+        <li id="<?php echo $_code ?>_cc_cid_block">
             <div class="input-box">
                 <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label><br />
                 <div class="v-fix"><input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" style="width:3em;" value="" /></div>
@@ -100,12 +115,291 @@
         </li>
     </ul>
 </fieldset>
+
 <?php
 // REM: this is outside the hidden area to avoid possible http request issues
 if($this->_paymentConfig['extendedfraudprofiling'])
 {
-	$fraudProfiler = $this->createExtendedFraudProfilingSession();
+    $fraudProfiler = $this->createExtendedFraudProfilingSession();
 
-	if($fraudProfiler) echo '<div style="position:absolute;left:-5000px;line-height:1px;">'.$fraudProfiler['html'].'</div>';
+    if($fraudProfiler) echo '<div style="position:absolute;left:-5000px;line-height:1px;">'.$fraudProfiler['html'].'</div>';
 }
 ?>
+<?php if($this->_ifAutoCardDetect()): ?>
+  <input id="<?php echo $_code ?>_cc_type" name="payment[cc_type]" type="hidden" disabled="false" value="<?php echo($this->getInfoData('cc_type')); ?>" />
+  <script type="text/javascript">
+    //<![CDATA[
+    var card_types = [<?php echo($this->_getCCRules()); ?>];
+    function CCGetType<?php echo $_code ?>(number) {
+      var i;
+      var len = card_types.length;
+
+      for(i=0; i<len; i++) {
+        var rule = card_types[i];
+        if (number.match(rule.pattern)) {
+          return rule.name;
+        }
+      }
+
+      return '';
+    }
+    function CCAutoDetect<?php echo $_code ?>() {
+      var elm = $('<?php echo $_code ?>_cc_number');
+      var cc_type = $('<?php echo $_code ?>_cc_type');
+      var type = CCGetType<?php echo $_code ?>(elm.value);
+      cc_type.value = type;
+      cc_type.disabled = false;
+      fireEvent(cc_type,'change');
+    }
+    Event.observe($('<?php echo $_code ?>_cc_number'), 'keyup', CCAutoDetect<?php echo $_code ?>);
+    Event.observe($('<?php echo $_code ?>_cc_number'), 'change', CCAutoDetect<?php echo $_code ?>);
+    CCAutoDetect<?php echo $_code ?>();
+    //]]>
+  </script>
+<?php endif; ?>
+
+<script type="text/javascript">
+    //<![CDATA[
+    function CCSelectType<?php echo($_code); ?>(type) {
+      $$('.cc_icons').each(function (elem) {
+        elem.setOpacity(0.3);
+        elem.setStyle({border:'none'});
+      });
+      var icon_id = 'cc_icon_<?php echo($_code); ?>_' + type;
+      if ($(icon_id))
+      {
+        $(icon_id).setOpacity(1);
+        $(icon_id).setStyle({border:'solid 1px #bbb'});
+      }
+    }
+    function SSChecked<?php echo $_code ?>() {
+        var elm = $('<?php echo $_code ?>_cc_type');
+        if (['GC'].indexOf(elm.value) != -1) {
+            $('<?php echo $_code ?>_cc_expiration_block').hide();
+            $('<?php echo $_code ?>_cc_cid_block').hide();
+        } else {
+            $('<?php echo $_code ?>_cc_expiration_block').show();
+            $('<?php echo $_code ?>_cc_cid_block').show();
+        }
+        CCSelectType<?php echo($_code); ?>(elm.value);
+    }
+    Event.observe($('<?php echo $_code ?>_cc_type'), 'change', SSChecked<?php echo $_code ?>);
+    SSChecked<?php echo $_code ?>();
+    //]]>
+</script>
+
+<?php if($this->_ifTokenizationEnabled()): ?>
+
+    <script type="text/javascript">
+        Ajax.JSONRequest = Class.create(Ajax.Base, (function() {
+            var id = 0, head = document.getElementsByTagName('head')[0];
+            return {
+                initialize: function($super, url, options) {
+                    $super(options);
+                    this.options.url = url;
+                    this.options.callbackParamName = this.options.callbackParamName || 'callback';
+                    this.options.timeout = this.options.timeout || 10; // Default timeout: 10 seconds
+                    this.options.invokeImmediately = (!Object.isUndefined(this.options.invokeImmediately)) ? this.options.invokeImmediately : true ;
+                    if (this.options.invokeImmediately) {
+                        this.request();
+                    }
+                },
+
+                /**
+                 *  Ajax.JSONRequest#_cleanup() -> "undefined"
+                 *  Cleans up after the request
+                 **/
+                _cleanup: function() {
+                    if (this.timeout) {
+                        clearTimeout(this.timeout);
+                        this.timeout = null;
+                    }
+                    if (this.transport && Object.isElement(this.transport)) {
+                        this.transport.remove();
+                    }
+                },
+
+                /**
+                 *  Ajax.JSONRequest#request() -> "undefined"
+                 *  Invokes the JSON-P request lifecycle
+                 **/
+                request: function() {
+
+                    // Define local vars
+                    var response = new Ajax.JSONResponse(this);
+                    var key = this.options.callbackParamName,
+                        name = 'callback',
+                        complete = function() {
+                            if (Object.isFunction(this.options.onComplete)) {
+                                this.options.onComplete.call(this, response);
+                            }
+                        }.bind(this);
+
+                    // Add callback as a parameter and build request URL
+                    this.options.parameters[key] = name;
+                    var url = this.options.url + ((this.options.url.include('?') ? '&' : '?') + Object.toQueryString(this.options.parameters));
+
+                    // Define callback function
+                    window[name] = function(json) {
+                        this._cleanup(); // Garbage collection
+                        window[name] = undefined;
+                        if (Object.isFunction(this.options.onSuccess)) {
+                            response.status = 200;
+                            response.statusText = "OK";
+                            response.setResponseContent(json);
+                            this.options.onSuccess.call(this, response);
+                        }
+                        complete();
+                    }.bind(this);
+
+                    this.transport = new Element('script', { type: 'text/javascript', src: url });
+
+                    if (Object.isFunction(this.options.onCreate)) {
+                        this.options.onCreate.call(this, response);
+                    }
+
+                    head.appendChild(this.transport);
+
+                    this.timeout = setTimeout(function() {
+                        this._cleanup();
+                        window[name] = Prototype.emptyFunction;
+                        if (Object.isFunction(this.options.onFailure)) {
+                            response.status = 504;
+                            response.statusText = "Gateway Timeout";
+                            this.options.onFailure.call(this, response);
+                        }
+                        complete();
+                    }.bind(this), this.options.timeout * 1000);
+                },
+                toString: function() { return "[object Ajax.JSONRequest]"; }
+            };
+        })());
+
+        Ajax.JSONResponse = Class.create({
+            initialize: function(request) {
+                this.request = request;
+            },
+            request: undefined,
+            status: 0,
+            statusText: '',
+            responseJSON: undefined,
+            responseText: undefined,
+            setResponseContent: function(json) {
+                this.responseJSON = json;
+                this.responseText = Object.toJSON(json);
+            },
+            getTransport: function() {
+                if (this.request) return this.request.transport;
+            },
+            toString: function() { return "[object Ajax.JSONResponse]"; }
+        });
+
+        Payment.prototype.save = function(){
+            if (checkout.loadWaiting!=false) return;
+            var validator = new Validation(this.form);
+            if (this.validate() && validator.validate()) {
+                checkout.setLoadWaiting('payment');
+
+                var elm_type = $('<?php echo $_code ?>_cc_type');
+
+                if(payment.currentMethod == "usaepay" && ['GC'].indexOf(elm_type.value) == -1) {
+                    var _this = this;
+
+                    var request = new Ajax.JSONRequest(
+                        '<?php echo $this->_getGatewayUrl(); ?>',
+                        {
+                            callbackParamName: "jsoncallback",
+
+                            parameters: {
+                                ccnum: $('<?php echo $_code ?>_cc_number').getValue(),
+                                expdate: $('<?php echo $_code ?>_expiration').getValue() + $('<?php echo $_code ?>_expiration_yr').getValue().slice(-2),
+                                ccv: $('<?php echo $_code ?>_cc_cid').getValue()
+                            },
+
+                            onSuccess: function(transport){
+
+                                var json = transport.responseText.evalJSON(true);
+
+                                var cc_number = $('<?php echo $_code ?>_cc_number').getValue();
+
+                                $('<?php echo $_code ?>_cc_token').setValue(json.token);
+                                $('<?php echo $_code ?>_cc_last4').setValue(cc_number.slice(-4));
+
+                                var request = new Ajax.Request(
+                                    _this.saveUrl,
+                                    {
+                                        method:'post',
+                                        onComplete: _this.onComplete,
+                                        onSuccess: _this.onSave,
+                                        onFailure: checkout.ajaxFailure.bind(checkout),
+                                        parameters: Object.extend($(_this.form).serialize(true), {'payment[cc_number]': '','payment[cc_cid]' : ''})
+                                    }
+                                );
+                            },
+
+                            onFailure: function() {
+                                alert(Translator.translate('Can\'t get token for credit card.').stripTags());
+                                _this.resetLoadWaiting();
+                            }
+                        });
+
+                } else {
+                    var request = new Ajax.Request(
+                        this.saveUrl,
+                        {
+                            method:'post',
+                            onComplete: this.onComplete,
+                            onSuccess: this.onSave,
+                            onFailure: checkout.ajaxFailure.bind(checkout),
+                            parameters: Form.serialize(this.form)
+                        }
+                    );
+                }
+            }
+        };
+
+        Review.prototype.save = function() {
+            if (checkout.loadWaiting!=false) return;
+            checkout.setLoadWaiting('review');
+
+            var elm_type = $('<?php echo $_code ?>_cc_type');
+
+            if(payment.currentMethod == "usaepay" && ['GC'].indexOf(elm_type.value) == -1) {
+                var params = $(payment.form).serialize(true);
+                Object.extend(params, {'payment[cc_number]': '', 'payment[cc_cid]' : ''});
+                if (this.agreementsForm) {
+                    Object.extend(params, $(this.agreementsForm).serialize(true));
+                }
+                params.save = true;
+                var request = new Ajax.Request(
+                    this.saveUrl,
+                    {
+                        method:'post',
+                        parameters:params,
+                        onComplete: this.onComplete,
+                        onSuccess: this.onSave,
+                        onFailure: checkout.ajaxFailure.bind(checkout)
+                    }
+                );
+            } else {
+                var params = Form.serialize(payment.form);
+                if (this.agreementsForm) {
+                    params += '&'+Form.serialize(this.agreementsForm);
+                }
+                params.save = true;
+                var request = new Ajax.Request(
+                    this.saveUrl,
+                    {
+                        method:'post',
+                        parameters:params,
+                        onComplete: this.onComplete,
+                        onSuccess: this.onSave,
+                        onFailure: checkout.ajaxFailure.bind(checkout)
+                    }
+                );
+            }
+        }
+
+    </script>
+
+<?php endif; ?>

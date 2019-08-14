@@ -42,23 +42,16 @@
  * @license     http://opensource.org/licenses/bsd-license.php  BSD License
  */
 
-class Mage_Usaepay_Model_SuspectedFraudConfigOptions
+class Mage_Usaepay_Model_Usaepay_Source_Cctype extends Mage_Payment_Model_Source_Cctype
 {
-    public function toOptionArray()
+    /**
+     * Return allowed cc types for current method
+     *
+     * @return array
+     */
+
+    public function getAllowedTypes()
     {
-        return array(
-            array(
-                'value' => 0,
-                'label' => Mage::helper('paygate')->__('Never')
-            ),
-            array(
-                'value' => 2,
-                'label' => Mage::helper('paygate')->__('Reject only')
-            ),
-			array(
-                'value' => 3,
-                'label' => Mage::helper('paygate')->__('Reject and Review')
-            ),
-        );
+        return array('VI', 'MC', 'AE', 'DI', 'GC', 'OT');
     }
 }

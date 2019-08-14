@@ -1,7 +1,7 @@
 <?php
 /**
  * USA ePay Magento Plugin.
- * v1.1.7 - December 19th, 2014
+ * v1.1.9 - July 3rd, 2015
  *
  * For assistance please contact devsupport@usaepay.com
  *

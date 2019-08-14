@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<layout version="1.0.0">
+    <adminhtml_sales_order_create_index>
+        <reference name="head">
+            <action method="addJs"><script>usaepay/giftcard-verification.js</script></action>
+        </reference>
+    </adminhtml_sales_order_create_index>
+</layout>

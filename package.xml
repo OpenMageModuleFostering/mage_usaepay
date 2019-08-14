@@ -1,18 +1,25 @@
 <?xml version="1.0"?>
 <package>
     <name>Mage_Usaepay</name>
-    <version>1.1.7</version>
+    <version>1.1.9</version>
     <stability>stable</stability>
-    <license>BSD License</license>
+    <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD License</license>
     <channel>community</channel>
     <extends/>
-    <summary>Payment gateway module for USAePay.</summary>
-    <description>Provides native support for the USAePay gateway. To use module you must first generate a source key and pin within the USAePay console.</description>
-    <notes>- Implements backup URL failover. When a failure occurs at the primary USAePay datacenter requests will start directing traffic to the backup urls.</notes>
-    <authors><author><name>Tim McEwen</name><user>tmcewen</user><email>tim@usaepay.com</email></author></authors>
-    <date>2014-12-26</date>
-    <time>18:36:52</time>
-    <contents><target name="mageetc"><dir name="modules"><file name="Mage_Usaepay.xml" hash="76f8a80720a28a4486255f867c3fb62e"/></dir></target><target name="magedesign"><dir name="frontend"><dir name="base"><dir name="default"><dir name="template"><dir name="usaepay"><file name="form.phtml" hash="53e690b0513b262de06c8bfca0280f81"/></dir></dir></dir></dir></dir><dir name="adminhtml"><dir name="base"><dir name="default"><dir name="template"><dir name="usaepay"><file name="form.phtml" hash="f7a0e0ceeda003b592b2706179b9742e"/></dir></dir></dir></dir></dir></target><target name="magecommunity"><dir name="Mage"><dir name="Usaepay"><dir name="Model"><file name="CCPaymentAction.php" hash="01f41226a32444e97a6cef4111b99e01"/><file name="SuspectedFraudConfigOptions.php" hash="d67a477da7f8fee01e1b79dfe3b6e3de"/><file name="TranApi.php" hash="149c9de4a9f6686f51b57983a911d418"/></dir><dir name="Helper"><file name="Data.php" hash="aa05ac0e2bd8ddc3b470209e7372ced8"/></dir><dir name="etc"><file name="config.xml" hash="f04d99646faa4487b8c842e214229cf2"/><file name="system.xml" hash="a3c58096d075a928cbcfb3a56ca0f4aa"/></dir><dir name="Block"><file name="Form.php" hash="81320b00e0daeb377596afd12790881d"/></dir></dir></dir></target></contents>
+    <summary>Payment gateway extension for USAePay</summary>
+    <description>Added:&#xD;
+- Tokenization&#xD;
+- Timeout&#xD;
+- Gift Card support&#xD;
+- Auto detect card type</description>
+    <notes>- Tokenization&#xD;
+- Timeout&#xD;
+- Gift Card support&#xD;
+- Auto detect card type</notes>
+    <authors><author><name>Tim McEwen</name><user>USAePay</user><email>magento@usaepay.com</email></author></authors>
+    <date>2015-07-06</date>
+    <time>20:12:23</time>
+    <contents><target name="magecommunity"><dir name="Mage"><dir name="Usaepay"><dir name="Block"><file name="Form.php" hash="b188fd27f57c580629c3e67b356e09e7"/></dir><dir name="etc"><file name="config.xml" hash="c8fcba63b91b650128ccbf07f97bfe01"/><file name="system.xml" hash="ea3d6bc7b9823b86127007edb034929e"/></dir><dir name="Helper"><file name="Data.php" hash="e03600fc74f5de10cbadb32ec67fb18d"/></dir><dir name="Model"><file name="CCPaymentAction.php" hash="fae664c6a4717aa7b2f9ffc19ad23850"/><dir name="sql"><dir name="usaepay_setup"><file name="install-1.1.8.php" hash=""/></dir></dir><file name="SuspectedFraudConfigOptions.php" hash="459f042c92ac2af6ba26dd26099ac576"/><file name="TranApi.php" hash="c1050440657b61c0760c0a875f350947"/><dir name="Usaepay"><dir name="Source"><file name="Cctype.php" hash="aac57b423714813bf9d1643a02ae8a34"/></dir></dir></dir></dir></dir></target><target name="magedesign"><dir name="adminhtml"><dir name="base"><dir name="default"><dir name="layout"><file name="usaepay.xml" hash="a4e96aa951ce3c632de7d5b2177b3b09"/></dir><dir name="template"><dir name="usaepay"><file name="form.phtml" hash="f158fbc5533ae623cdc354c3f0b27000"/></dir></dir></dir></dir></dir><dir name="frontend"><dir name="base"><dir name="default"><dir name="layout"><file name="usaepay.xml" hash="9b199d82bd9945aee13c6063bc8f52f1"/></dir><dir name="template"><dir name="usaepay"><file name="form.phtml" hash="09b479eda8cdae590b7ccfd77b3d036c"/></dir></dir></dir></dir></dir></target><target name="mageetc"><dir name="modules"><file name="Mage_Usaepay.xml" hash="4b1efb355d6def36e974a9205309ac0a"/></dir></target><target name="mageweb"><dir name="js"><dir name="usaepay"><file name="giftcard-verification.js" hash="59e487ec0bf8b33345abef3f1996ebcf"/></dir></dir></target><target name="mageskin"><dir name="frontend"><dir name="base"><dir name="default"><dir name="images"><dir name="usaepay"><file name="AE.png" hash="c49a4247984b3732a4af50a3390aa978"/><file name="DI.png" hash="6c0a386a00307f87db7bea366cca35f5"/><file name="GC.png" hash="d936e11fa3884b8c9f1bd5c914be8629"/><file name="MC.png" hash="6f6cdc29ee2e22e06b1ac029cb52ef71"/><file name="OT.png" hash="8e06c094c1871376dfea1da8088c29d1"/><file name="VI.png" hash="3ddc4a4d25c946e8ad7e6998f30fd4e3"/></dir></dir></dir></dir></dir></target></contents>
     <compatible/>
-    <dependencies><required><php><min>5.2.0</min><max>6.0.0</max></php></required></dependencies>
+    <dependencies><required><php><min>5.4.0</min><max>5.6.0</max></php></required></dependencies>
 </package>

@@ -1,7 +1,7 @@
 <?php
 /**
  * USA ePay Magento Plugin.
- * v1.1.7 - December 19th, 2014
+ * v1.1.9 - July 3rd, 2015
  *
  * Copyright (c) 2010 USAePay
  * All rights reserved.
@@ -53,7 +53,7 @@
 //	For assistance please contact devsupport@usaepay.com
 //
 
-define("USAEPAY_VERSION", "1.1.7");
+define("USAEPAY_VERSION", "1.1.9");
 
 
 /**
@@ -301,7 +301,9 @@ class Mage_Usaepay_Model_TranApi {
 	}
 
 	protected function _getproccessingurl() {
-		$urlArr = array('https://www.usaepay.com', 'https://www-01.usaepay.com', 'https://www-02.usaepay.com', 'https://www-03.usaepay.com');
+
+		$urlArr = array( 'https://www.usaepay.com', 'https://www-01.usaepay.com', 'https://www-02.usaepay.com', 'https://www-03.usaepay.com');
+
 		foreach ($urlArr as $v) {
 			$test = $this->_urlExists($v.'/ping');
 			if($test){
@@ -322,6 +324,16 @@ class Mage_Usaepay_Model_TranApi {
 		}
 		//$this->_log("urlExists\nURL: $url\n------------------------\nRequestURL:\n".$url."\n------------------------\n");
 		return $url;
+	}
+
+	/**
+	 * Public function to get gateway url
+	 *
+	 * @return string
+	 */
+	public function getGatewayBaseUrl()
+	{
+		return $this->_getGatewayBaseUrl();
 	}
 
 	/**
@@ -375,7 +387,7 @@ class Mage_Usaepay_Model_TranApi {
 			} else {
 				if(!$this->magstripe) {
 					if(!$this->card) return "Credit Card Number is required ({$this->command})";
-					if(!$this->exp) return "Expiration Date is required";
+					if(!$this->exp && $this->command != 'giftcard:sale') return "Expiration Date is required";
 				}
 			}
 			$this->amount = preg_replace('/[^\d.]+/', '', $this->amount);
@@ -500,7 +512,8 @@ class Mage_Usaepay_Model_TranApi {
 			"UMsoftware" => $this->software,
 			"UMignoreDuplicate" => $this->ignoreduplicate,
 			"UMrefNum" => $this->refnum,
-			"UMsession" => $this->session
+			"UMsession" => $this->session,
+			"UMtimeout" => $this->timeout - 1
 			);
 
 		// tack on custom fields

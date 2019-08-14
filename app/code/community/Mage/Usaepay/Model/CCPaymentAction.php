@@ -1,7 +1,7 @@
 <?php
 /**
  * USA ePay Magento Plugin.
- * v1.1.7 - December 19th, 2014
+ * v1.1.9 - July 3rd, 2015
  *
  * For assistance please contact devsupport@usaepay.com
  *
@@ -61,9 +61,92 @@ class Mage_Usaepay_Model_CCPaymentAction extends Mage_Payment_Model_Method_Cc
 
     protected $_authMode                = 'auto';
 
+    /**
+     * Assign data to info model instance
+     *
+     * @param   mixed $data
+     * @return  Mage_Payment_Model_Info
+     */
+    public function assignData($data)
+    {
+        if (!($data instanceof Varien_Object)) {
+            $data = new Varien_Object($data);
+        }
+        $info = $this->getInfoInstance();
+
+        if($data->getCcType() == 'GC') {
+            $info->setCcType($data->getCcType())
+                ->setCcOwner($data->getCcOwner())
+                ->setCcLast4(substr($data->getCcNumber(), -4))
+                ->setCcNumber($data->getCcNumber())
+                ->setCcExpMonth(0)
+                ->setCcExpYear(0)
+                ->setCcCid(0)
+                ->setCcUsaepayToken('');
+            return $this;
+        }
+
+        if(!$this->getConfigData('tokenization')) {
+            return parent::assignData($data);
+        }
+
+        $info->setCcType($data->getCcType())
+            ->setCcOwner($data->getCcOwner())
+            ->setCcLast4($data->getCcLast4())
+            ->setCcCid($data->getCcCid())
+            ->setCcExpMonth($data->getCcExpMonth())
+            ->setCcExpYear($data->getCcExpYear())
+            ->setCcUsaepayToken($data->getCcUsaepayToken());
+        return $this;
+    }
+
+
+    /**
+     * Validate payment method information object
+     *
+     * @return  Mage_Payment_Model_Method_Abstract
+     */
+    public function validate()
+    {
+        $info = $this->getInfoInstance();
+
+        if ($info->getCcType() != 'GC' && !$this->getConfigData('tokenization')) {
+            return parent::validate();
+        }
+
+        $errorMsg = false;
+        $availableTypes = explode(',', $this->getConfigData('cctypes'));
+
+        if (in_array($info->getCcType(), $availableTypes)) {
+
+            if ($info->getCcType() == 'GC') {
+                if (!preg_match('/^[0-9]{19}$/', $info->getCcNumber())) {
+                    $errorMsg = Mage::helper('payment')->__('Gift card number mismatch with credit card type.');
+                }
+            } else {
+                if (!$this->_validateExpDate($info->getCcExpYear(), $info->getCcExpMonth())) {
+                    $errorMsg = Mage::helper('payment')->__('Incorrect credit card expiration date.');
+                }
+            }
+
+        } else {
+            $errorMsg = Mage::helper('payment')->__('Credit card type is not allowed for this payment method.');
+        }
+
+        if($errorMsg){
+            Mage::throwException($errorMsg);
+        }
+
+        //This must be after all validation conditions
+        if ($this->getIsCentinelValidationEnabled()) {
+            $this->getCentinelValidator()->validate($this->getCentinelValidationData());
+        }
+
+        return $this;
+    }
+
     public function authorize(Varien_Object $payment, $amount)
     {
-
         // initialize transaction object
         $tran = $this->_initTransaction($payment);
 
@@ -78,9 +161,16 @@ class Mage_Usaepay_Model_CCPaymentAction extends Mage_Payment_Model_Method_Cc
 
         // general payment data
         $tran->cardholder = $payment->getCcOwner();
-        $tran->card       = $payment->getCcNumber();
+
+        if($payment->getCcType() != 'GC' && $this->getConfigData('tokenization')) {
+            $tran->card = $payment->getCcUsaepayToken();
+        } else {
+            $tran->card = $payment->getCcNumber();
+        }
+
         $tran->exp        = $payment->getCcExpMonth().substr($payment->getCcExpYear(), 2, 2);
         $tran->cvv2       = $payment->getCcCid();
+
         $tran->amount     = $amount;
         $tran->ponum      = $payment->getPoNumber();
 
@@ -148,10 +238,18 @@ class Mage_Usaepay_Model_CCPaymentAction extends Mage_Payment_Model_Method_Cc
         //file_put_contents(tempnam('/tmp','authorize'), print_r($payment,true));
 
         // switch command based on pref
-        if($this->getConfigData('payment_action') == self::ACTION_AUTHORIZE && $this->_authMode!='capture')   $tran->command='cc:authonly';
-        else $tran->command='cc:sale';
+        if($payment->getCcType() == 'GC') {
+            $tran->command='giftcard:sale';
+        } else {
+            if($this->getConfigData('payment_action') == self::ACTION_AUTHORIZE && $this->_authMode!='capture')   $tran->command='cc:authonly';
+            else $tran->command='cc:sale';
+        }
 
         //ueLogDebug("CCPaymentAction::Authorize   Amount: $amount    AuthMode: " . $this->_authMode . "     Command: " . $tran->command . "\n" );
+
+        if($this->getConfigData('timeout') && is_numeric($this->getConfigData('timeout'))) {
+            $tran->timeout = $this->getConfigData('timeout');
+        }
 
         // process transactions
         $tran->Process();

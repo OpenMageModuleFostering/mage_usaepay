@@ -1,7 +1,7 @@
 <?php
 /**
  * USA ePay Magento Plugin.
- * v1.1.7 - December 19th, 2014
+ * v1.1.9 - July 3rd, 2015
  *
  * For assistance please contact devsupport@usaepay.com
  *
@@ -42,61 +42,251 @@
  * @license     http://opensource.org/licenses/bsd-license.php  BSD License
  */
 ?>
-<fieldset class="form-list">
-    <?php $_code=$this->getMethodCode() ?>
-    <ul id="payment_form_<?php echo $_code ?>" style="display:none">
-        <li>
-            <div class="input-box">
-                <label for="<?php echo $_code ?>_cc_owner"><?php echo $this->__('Name on Card') ?> <span class="required">*</span></label><br/>
-                <input type="text" title="<?php echo $this->__('Name on Card') ?>" class="required-entry input-text" id="<?php echo $_code ?>_cc_owner" name="payment[cc_owner]" value="<?php echo $this->htmlEscape($this->getInfoData('cc_owner')) ?>"/>
-            </div>
-        </li>
-        <li>
-            <div class="input-box">
-                <label for="<?php echo $_code ?>_cc_type"><?php echo $this->__('Credit Card Type') ?> <span class="required">*</span></label><br />
-                <select id="<?php echo $_code ?>_cc_type" name="payment[cc_type]" class="required-entry mw-validate-cc-type-select">
-                    <option value=""><?php echo $this->__('--Please Select--')?></option>
-                <?php $_ccType = $this->getInfoData('cc_type') ?>
-                <?php foreach ($this->getCcAvailableTypes() as $_typeCode => $_typeName): ?>
-                    <option value="<?php echo $_typeCode ?>"<?php if($_typeCode==$_ccType): ?> selected="selected"<?php endif ?>><?php echo $_typeName ?></option>
-                <?php endforeach ?>
-                </select>
-            </div>
-        </li>
-        <li>
-            <div class="input-box">
-                <label for="<?php echo $_code ?>_cc_number"><?php echo "Credit Card Number" ?> <span class="required">*</span></label><br/>
-                <input type="text" id="<?php echo $_code ?>_cc_number" name="payment[cc_number]" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="" />
-            </div>
-        </li>
-        <li>
-            <div class="input-box">
-                <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">*</span></label><br />
-                <div class="v-fix">
-                <select id="<?php echo $_code ?>_expiration" style="width:140px;" name="payment[cc_exp_month]" class="required-entry">
-                <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
-                <?php foreach ($this->getCcMonths() as $k=>$v): ?>
-                    <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
-                <?php endforeach ?>
-                </select>
+    <fieldset class="form-list">
+        <?php $_code=$this->getMethodCode() ?>
+        <ul id="payment_form_<?php echo $_code ?>" style="display:none">
+            <li>
+                <div class="input-box">
+                    <label for="<?php echo $_code ?>_cc_owner"><?php echo $this->__('Name on Card') ?> <span class="required">*</span></label><br/>
+                    <input type="text" title="<?php echo $this->__('Name on Card') ?>" class="required-entry input-text" id="<?php echo $_code ?>_cc_owner" name="payment[cc_owner]" value="<?php echo $this->htmlEscape($this->getInfoData('cc_owner')) ?>"/>
                 </div>
-                <div class="v-fix" style="padding-left:5px;">
-                <?php $_ccExpYear = $this->getInfoData('cc_exp_year') ?>
-                <select id="<?php echo $_code ?>_expiration_yr" style="width:103px;" name="payment[cc_exp_year]" class="required-entry">
-                <?php foreach ($this->getCcYears() as $k=>$v): ?>
-                    <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpYear): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
-                <?php endforeach ?>
-                </select>
+            </li>
+            <li>
+                <div class="input-box">
+                    <label for="<?php echo $_code ?>_cc_type"><?php echo $this->__('Credit Card Type') ?> <span class="required">*</span></label><br />
+                    <select id="<?php echo $_code ?>_cc_type" name="payment[cc_type]" class="required-entry mw-validate-cc-type-select">
+                        <option value=""><?php echo $this->__('--Please Select--')?></option>
+                        <?php $_ccType = $this->getInfoData('cc_type') ?>
+                        <?php foreach ($this->getCcAvailableTypes() as $_typeCode => $_typeName): ?>
+                            <option value="<?php echo $_typeCode ?>"<?php if($_typeCode==$_ccType): ?> selected="selected"<?php endif ?>><?php echo $_typeName ?></option>
+                        <?php endforeach ?>
+                    </select>
                 </div>
-            </div>
-        </li>
-        <li>
-            <div class="input-box">
-                <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label><br />
-                <div class="v-fix"><input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" style="width:3em;" value="" /></div>
-                &nbsp;
-                <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
-            </div>
-        </li>
-    </ul>
-</fieldset>
+            </li>
+            <li>
+                <div class="input-box">
+                    <label for="<?php echo $_code ?>_cc_number"><?php echo "Credit Card Number" ?> <span class="required">*</span></label><br/>
+                    <input type="text" id="<?php echo $_code ?>_cc_number" name="payment[cc_number]" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="" />
+                    <?php if($this->_ifTokenizationEnabled()): ?>
+                        <input type="hidden" id="<?php echo $_code ?>_cc_last4" name="payment[cc_last4]" value="" />
+                        <input type="hidden" id="<?php echo $_code ?>_cc_token" name="payment[cc_usaepay_token]" value="" />
+                    <?php endif; ?>
+                </div>
+            </li>
+            <li id="<?php echo $_code ?>_cc_expiration_block">
+                <div class="input-box">
+                    <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">*</span></label><br />
+                    <div class="v-fix">
+                        <select id="<?php echo $_code ?>_expiration" style="width:140px;" name="payment[cc_exp_month]" class="required-entry">
+                            <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
+                            <?php foreach ($this->getCcMonths() as $k=>$v): ?>
+                                <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+                    <div class="v-fix" style="padding-left:5px;">
+                        <?php $_ccExpYear = $this->getInfoData('cc_exp_year') ?>
+                        <select id="<?php echo $_code ?>_expiration_yr" style="width:103px;" name="payment[cc_exp_year]" class="required-entry">
+                            <?php foreach ($this->getCcYears() as $k=>$v): ?>
+                                <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpYear): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+                </div>
+            </li>
+            <li id="<?php echo $_code ?>_cc_cid_block">
+                <div class="input-box">
+                    <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label><br />
+                    <div class="v-fix"><input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" style="width:3em;" value="" /></div>
+                    &nbsp;
+                    <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
+                </div>
+            </li>
+        </ul>
+    </fieldset>
+
+    <script type="text/javascript">
+        //<![CDATA[
+        var SSChecked<?php echo $_code ?> = function() {
+            var elm = $('<?php echo $_code ?>_cc_type');
+            if (['GC'].indexOf(elm.value) != -1) {
+                $('<?php echo $_code ?>_cc_expiration_block').hide();
+                $('<?php echo $_code ?>_cc_cid_block').hide();
+                $('<?php echo $_code ?>_cc_cid').removeClassName('required-entry');
+                $('<?php echo $_code ?>_cc_cid').removeClassName('validate-cc-cvn');
+            } else {
+                $('<?php echo $_code ?>_cc_expiration_block').show();
+                $('<?php echo $_code ?>_cc_cid_block').show();
+                $('<?php echo $_code ?>_cc_cid').addClassName('required-entry');
+                $('<?php echo $_code ?>_cc_cid').addClassName('validate-cc-cvn');
+            }
+        };
+
+        Event.observe($('<?php echo $_code ?>_cc_type'), 'change', SSChecked<?php echo $_code ?>);
+        SSChecked<?php echo $_code ?>();
+        //]]>
+    </script>
+
+<?php if($this->_ifTokenizationEnabled()): ?>
+
+    <script type="text/javascript">
+        Ajax.JSONRequest = Class.create(Ajax.Base, (function() {
+            var id = 0, head = document.getElementsByTagName('head')[0];
+            return {
+                initialize: function($super, url, options) {
+                    $super(options);
+                    this.options.url = url;
+                    this.options.callbackParamName = this.options.callbackParamName || 'callback';
+                    this.options.timeout = this.options.timeout || 10; // Default timeout: 10 seconds
+                    this.options.invokeImmediately = (!Object.isUndefined(this.options.invokeImmediately)) ? this.options.invokeImmediately : true ;
+                    if (this.options.invokeImmediately) {
+                        this.request();
+                    }
+                },
+
+                /**
+                 *  Ajax.JSONRequest#_cleanup() -> "undefined"
+                 *  Cleans up after the request
+                 **/
+                _cleanup: function() {
+                    if (this.timeout) {
+                        clearTimeout(this.timeout);
+                        this.timeout = null;
+                    }
+                    if (this.transport && Object.isElement(this.transport)) {
+                        this.transport.remove();
+                    }
+                },
+
+                /**
+                 *  Ajax.JSONRequest#request() -> "undefined"
+                 *  Invokes the JSON-P request lifecycle
+                 **/
+                request: function() {
+
+                    // Define local vars
+                    var response = new Ajax.JSONResponse(this);
+                    var key = this.options.callbackParamName,
+                        name = 'callback',
+                        complete = function() {
+                            if (Object.isFunction(this.options.onComplete)) {
+                                this.options.onComplete.call(this, response);
+                            }
+                        }.bind(this);
+
+                    // Add callback as a parameter and build request URL
+                    this.options.parameters[key] = name;
+                    var url = this.options.url + ((this.options.url.include('?') ? '&' : '?') + Object.toQueryString(this.options.parameters));
+
+                    // Define callback function
+                    window[name] = function(json) {
+                        this._cleanup(); // Garbage collection
+                        window[name] = undefined;
+                        if (Object.isFunction(this.options.onSuccess)) {
+                            response.status = 200;
+                            response.statusText = "OK";
+                            response.setResponseContent(json);
+                            this.options.onSuccess.call(this, response);
+                        }
+                        complete();
+                    }.bind(this);
+
+                    this.transport = new Element('script', { type: 'text/javascript', src: url });
+
+                    if (Object.isFunction(this.options.onCreate)) {
+                        this.options.onCreate.call(this, response);
+                    }
+
+                    head.appendChild(this.transport);
+
+                    this.timeout = setTimeout(function() {
+                        this._cleanup();
+                        window[name] = Prototype.emptyFunction;
+                        if (Object.isFunction(this.options.onFailure)) {
+                            response.status = 504;
+                            response.statusText = "Gateway Timeout";
+                            this.options.onFailure.call(this, response);
+                        }
+                        complete();
+                    }.bind(this), this.options.timeout * 1000);
+                },
+                toString: function() { return "[object Ajax.JSONRequest]"; }
+            };
+        })());
+
+        Ajax.JSONResponse = Class.create({
+            initialize: function(request) {
+                this.request = request;
+            },
+            request: undefined,
+            status: 0,
+            statusText: '',
+            responseJSON: undefined,
+            responseText: undefined,
+            setResponseContent: function(json) {
+                this.responseJSON = json;
+                this.responseText = Object.toJSON(json);
+            },
+            getTransport: function() {
+                if (this.request) return this.request.transport;
+            },
+            toString: function() { return "[object Ajax.JSONResponse]"; }
+        });
+
+        AdminOrder.prototype.submit = function() {
+            if (this.orderItemChanged) {
+                if (confirm('You have item changes')) {
+                    if (editForm.submit()) {
+                        disableElements('save');
+                    }
+                } else {
+                    this.itemsUpdate();
+                }
+            } else {
+                var elm_type = $('<?php echo $_code ?>_cc_type');
+                if(order.paymentMethod == "usaepay" && ['GC'].indexOf(elm_type.value) == -1) {
+                    var _this = this;
+
+                    var request = new Ajax.JSONRequest(
+                        '<?php echo $this->_getGatewayUrl(); ?>',
+                        {
+                            callbackParamName: "jsoncallback",
+
+                            parameters: {
+                                ccnum: $('<?php echo $_code ?>_cc_number').getValue(),
+                                expdate: $('<?php echo $_code ?>_expiration').getValue() + $('<?php echo $_code ?>_expiration_yr').getValue().slice(-2),
+                                ccv: $('<?php echo $_code ?>_cc_cid').getValue()
+                            },
+
+                            onSuccess: function(transport){
+
+                                var json = transport.responseText.evalJSON(true);
+
+                                var cc_number = $('<?php echo $_code ?>_cc_number').getValue();
+
+                                $('<?php echo $_code ?>_cc_token').setValue(json.token);
+                                $('<?php echo $_code ?>_cc_last4').setValue(cc_number.slice(-4));
+
+                                $('<?php echo $_code ?>_cc_number').remove();
+                                $('<?php echo $_code ?>_cc_cid').remove();
+
+                                if (editForm.submit()) {
+                                    disableElements('save');
+                                }
+                            },
+
+                            onFailure: function() {
+                                alert(Translator.translate('Can\'t get token for credit card.').stripTags());
+                            }
+                        });
+                } else {
+                    if (editForm.submit()) {
+                        disableElements('save');
+                    }
+                }
+            }
+        }
+
+    </script>
+
+<?php endif; ?>
