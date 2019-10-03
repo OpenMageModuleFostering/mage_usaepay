@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/Mage_Usaepay",
+    "name": "OpenMageModuleFostering\/Mage_Usaepay",
     "type": "magento-module",
     "license": "BSD-License",
     "homepage": "",
     "description": "Payment gateway extension for USAePay",
     "authors": [
-    {
-        "name": "Tim McEwen",
-        "email": "magento@usaepay.com"
-    }
-],
+        {
+            "name": "Tim McEwen",
+            "email": "magento@usaepay.com"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
